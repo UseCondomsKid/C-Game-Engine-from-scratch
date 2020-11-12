@@ -202,7 +202,7 @@ int __stdcall WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, PSTR Comma
             ElapsedMicrosecondsAccumulatorRaw = 0;
             ElapsedMicrosecondsAccumulatorCooked = 0;
             PreviousKernelCPUTime = CurrentKernelCPUTime;
-            PreviousUserCPUTime = CurrentKernelCPUTime;
+            PreviousUserCPUTime = CurrentUserCPUTime;
             gPerformanceData.PreviousSystemTime = gPerformanceData.CurrentSystemTime;
         }
     }
@@ -385,34 +385,98 @@ void ProcessPlayerInput(void)
     {
         gPerformanceData.DisplayDebugInfo = !gPerformanceData.DisplayDebugInfo;
     }
-    if (LeftKeyIsDown)
+
+    if (!gPlayer.MovementRemaining)
     {
-        if (gPlayer.ScreenPosX > 0)
+        if (DownKeyIsDown)
         {
-            gPlayer.ScreenPosX--;
+            if (gPlayer.ScreenPosY < GAME_RES_HEIGHT - 16)
+            {
+                gPlayer.MovementRemaining = 16;
+                gPlayer.Direction = DIRECTION_DOWN;
+            }
+        }
+        else if (LeftKeyIsDown)
+        {
+            if (gPlayer.ScreenPosX > 0)
+            {
+                gPlayer.MovementRemaining = 16;
+                gPlayer.Direction = DIRECTION_LEFT;
+            }
+        }
+        else if (RightKeyIsDown)
+        {
+            if (gPlayer.ScreenPosX < GAME_RES_WIDTH - 16)
+            {
+                gPlayer.MovementRemaining = 16;
+                gPlayer.Direction = DIRECTION_RIGHT;
+            }
+        }
+        else if (UpKeyIsDown)
+        {
+            if (gPlayer.ScreenPosY > 0)
+            {
+                gPlayer.MovementRemaining = 16;
+                gPlayer.Direction = DIRECTION_UP;
+            }
         }
     }
-    if (RightKeyIsDown)
+    else
     {
-        if (gPlayer.ScreenPosX < GAME_RES_WIDTH - 16)
-        {
-            gPlayer.ScreenPosX++;
-        }
-    }
-    if (UpKeyIsDown)
-    {
-        if (gPlayer.ScreenPosY > 0)
-        {
-            gPlayer.ScreenPosY--;
-        }
-    }
-    if (DownKeyIsDown)
-    {
-        if (gPlayer.ScreenPosY < GAME_RES_HEIGHT - 16)
+        gPlayer.MovementRemaining--;
+
+        if (gPlayer.Direction == DIRECTION_DOWN)
         {
             gPlayer.ScreenPosY++;
         }
+        else if (gPlayer.Direction == DIRECTION_LEFT)
+        {
+            gPlayer.ScreenPosX--;
+        }
+        else if (gPlayer.Direction == DIRECTION_RIGHT)
+        {
+            gPlayer.ScreenPosX++;
+        }
+        else if (gPlayer.Direction == DIRECTION_UP)
+        {
+            gPlayer.ScreenPosY--;
+        }
+
+        switch (gPlayer.MovementRemaining)
+        {
+            case 16:
+            {
+                gPlayer.SpriteIndex = 0;
+                break;
+            }
+            case 12:
+            {
+                gPlayer.SpriteIndex = 1;
+                break;
+            }
+            case 8:
+            {
+                gPlayer.SpriteIndex = 0;
+                break;
+            }
+            case 4:
+            {
+                gPlayer.SpriteIndex = 2;
+                break;
+            }
+            case 0:
+            {
+                gPlayer.SpriteIndex = 0;
+                break;
+            }
+
+            default:
+            {
+
+            }
+        }
     }
+
 
     DebugKeyWasDown = DebugKeyIsDown;
     LeftKeyWasDown = LeftKeyIsDown;
@@ -509,8 +573,11 @@ DWORD InitializeHero(void)
 {
     DWORD Error = ERROR_SUCCESS;
 
-    gPlayer.ScreenPosX = 25;
-    gPlayer.ScreenPosY = 25;
+    gPlayer.ScreenPosX = 64;
+    gPlayer.ScreenPosY = 64;
+    gPlayer.CurrentArmor = SUIT_0;
+    gPlayer.Direction = DIRECTION_DOWN;
+
     if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Down_Standing.bmpx", &gPlayer.Sprite[SUIT_0][FACING_DOWN_0])) != ERROR_SUCCESS)
     {
         MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
@@ -522,6 +589,51 @@ DWORD InitializeHero(void)
         goto Exit;
     }
     if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Down_Walk2.bmpx", &gPlayer.Sprite[SUIT_0][FACING_DOWN_2])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Left_Standing.bmpx", &gPlayer.Sprite[SUIT_0][FACING_LEFT_0])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Left_Walk1.bmpx", &gPlayer.Sprite[SUIT_0][FACING_LEFT_1])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Left_Walk2.bmpx", &gPlayer.Sprite[SUIT_0][FACING_LEFT_2])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Right_Standing.bmpx", &gPlayer.Sprite[SUIT_0][FACING_RIGHT_0])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Right_Walk1.bmpx", &gPlayer.Sprite[SUIT_0][FACING_RIGHT_1])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Right_Walk2.bmpx", &gPlayer.Sprite[SUIT_0][FACING_RIGHT_2])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Up_Standing.bmpx", &gPlayer.Sprite[SUIT_0][FACING_UP_0])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Up_Walk1.bmpx", &gPlayer.Sprite[SUIT_0][FACING_UP_1])) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        goto Exit;
+    }
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Up_Walk2.bmpx", &gPlayer.Sprite[SUIT_0][FACING_UP_2])) != ERROR_SUCCESS)
     {
         MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         goto Exit;
@@ -549,21 +661,8 @@ void RenderFrameGraphics(void)
     }
     #endif
 
-    //int32_t ScreenX = gPlayer.ScreenPosX;
-    //int32_t ScreenY = gPlayer.ScreenPosY;
 
-    //int32_t StartingScreenPixel = ((GAME_RES_WIDTH * GAME_RES_HEIGHT) - GAME_RES_WIDTH) + ScreenX - (GAME_RES_WIDTH * ScreenY);
-
-    //for (int32_t y = 0; y < 16; y++)
-    //{
-    //    for (int32_t x = 0; x < 16; x++)
-    //    {
-    //        memset((PIXEL32*)gBackBuffer.Memory + (uintptr_t)StartingScreenPixel + x - ((uintptr_t)GAME_RES_WIDTH * y), 0xFF, sizeof(PIXEL32));
-    //    }
-    //}
-
-
-    Blit32BppBitmapToBuffer(&gPlayer.Sprite[SUIT_0][FACING_DOWN_0], gPlayer.ScreenPosX, gPlayer.ScreenPosY);
+    Blit32BppBitmapToBuffer(&gPlayer.Sprite[gPlayer.CurrentArmor][gPlayer.Direction + gPlayer.SpriteIndex], gPlayer.ScreenPosX, gPlayer.ScreenPosY);
 
 
     HDC DeviceContext = GetDC(gGameWindow);
@@ -609,8 +708,14 @@ void RenderFrameGraphics(void)
         sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "Memory:  %lu KB", gPerformanceData.MemInfo.PrivateUsage / 1024);
         TextOutA(DeviceContext, 0, 78, DebugTextBuffer, (int)strlen(DebugTextBuffer));
 
-        sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "CPU:     %.02f %%", gPerformanceData.MemInfo.PrivateUsage / 1024);
+        sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "CPU:     %.02f %%", gPerformanceData.CPUPercent);
         TextOutA(DeviceContext, 0, 91, DebugTextBuffer, (int)strlen(DebugTextBuffer));
+
+        sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "Total Frames: %llu", gPerformanceData.TotalFramesRendered);
+        TextOutA(DeviceContext, 0, 104, DebugTextBuffer, (int)strlen(DebugTextBuffer));
+
+        sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "ScreenPos: (%d,%d)", gPlayer.ScreenPosX, gPlayer.ScreenPosY);
+        TextOutA(DeviceContext, 0, 117, DebugTextBuffer, (int)strlen(DebugTextBuffer));
     }
 
     ReleaseDC(gGameWindow, DeviceContext);
