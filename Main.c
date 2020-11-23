@@ -22,6 +22,7 @@
 HWND gGameWindow;
 BOOL gGameIsRunning; //Global vars are initialized to zero by default
 GAMEBITMAP gBackBuffer;
+GAMEBITMAP g6x7Font;
 GAMEPERFDATA gPerformanceData;
 HERO gPlayer;
 BOOL gWindowHasFocus;
@@ -104,6 +105,12 @@ int __stdcall WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, PSTR Comma
 
     if (CreateMainGameWindow() != ERROR_SUCCESS)
     {
+        goto Exit;
+    }
+
+    if ((Load32BppBitmapFromFile(".\\Assets\\6x7Font.bmpx", &g6x7Font)) != ERROR_SUCCESS)
+    {
+        MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         goto Exit;
     }
     
@@ -644,6 +651,659 @@ Exit:
     return(Error);
 }
 
+
+void BlitStringToBuffer(_In_ char* String, _In_ GAMEBITMAP* GameBitmap, _In_ uint16_t x, _In_ uint16_t y)
+{
+    int CharWidth = GameBitmap->BitMapInfo.bmiHeader.biWidth / FONT_SHEET_CHARACTERS_PER_ROW;
+    int CharHeight = GameBitmap->BitMapInfo.bmiHeader.biHeight;
+    int BytesPerCharacter = (CharWidth * CharHeight * (GameBitmap->BitMapInfo.bmiHeader.biBitCount / 8));
+    int StringLength = strlen(String);
+    GAMEBITMAP StringBitmap = { 0 };
+    StringBitmap.BitMapInfo.bmiHeader.biBitCount = GAME_BPP;
+    StringBitmap.BitMapInfo.bmiHeader.biHeight = CharHeight;
+    StringBitmap.BitMapInfo.bmiHeader.biWidth = CharWidth * StringLength;
+    StringBitmap.BitMapInfo.bmiHeader.biPlanes = 1;
+    StringBitmap.BitMapInfo.bmiHeader.biCompression = BI_RGB;
+    StringBitmap.Memory = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, BytesPerCharacter * StringLength);
+
+    for (int Character = 0; Character < StringLength; Character++)
+    {
+        int StartingFontSheetByte = 0;
+        int FontSheetOffset = 0;
+        int StringBitmapOffset = 0;
+        PIXEL32 FontSheetPixel = { 0 };
+
+
+        switch (String[Character])
+        {
+        case 'A':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth;
+
+            break;
+        }
+        case 'B':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + CharWidth;
+
+            break;
+        }
+        case 'C':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 2);
+
+            break;
+        }
+        case 'D':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 3);
+
+            break;
+        }
+        case 'E':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 4);
+
+            break;
+        }
+        case 'F':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 5);
+
+            break;
+        }
+        case 'G':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 6);
+
+            break;
+        }
+        case 'H':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 7);
+
+            break;
+        }
+        case 'I':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 8);
+
+            break;
+        }
+        case 'J':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 9);
+
+            break;
+        }
+        case 'K':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 10);
+
+            break;
+        }
+        case 'L':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 11);
+
+            break;
+        }
+        case 'M':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 12);
+
+            break;
+        }
+        case 'N':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 13);
+
+            break;
+        }
+        case 'O':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 14);
+
+            break;
+        }
+        case 'P':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 15);
+
+            break;
+        }
+        case 'Q':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 16);
+
+            break;
+        }
+        case 'R':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 17);
+
+            break;
+        }
+        case 'S':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 18);
+
+            break;
+        }
+        case 'T':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 19);
+
+            break;
+        }
+        case 'U':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 20);
+
+            break;
+        }
+        case 'V':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 21);
+
+            break;
+        }
+        case 'W':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 22);
+
+            break;
+        }
+        case 'X':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 23);
+
+            break;
+        }
+        case 'Y':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 24);
+
+            break;
+        }
+        case 'Z':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 25);
+
+            break;
+        }
+        case 'a':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 26);
+
+            break;
+        }
+        case 'b':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 27);
+
+            break;
+        }
+        case 'c':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 28);
+
+            break;
+        }
+        case 'd':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 29);
+
+            break;
+        }
+        case 'e':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 30);
+
+            break;
+        }
+        case 'f':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 31);
+
+            break;
+        }
+        case 'g':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 32);
+
+            break;
+        }
+        case 'h':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 33);
+
+            break;
+        }
+        case 'i':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 34);
+
+            break;
+        }
+        case 'j':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 35);
+
+            break;
+        }
+        case 'k':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 36);
+
+            break;
+        }
+        case 'l':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 37);
+
+            break;
+        }
+        case 'm':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 38);
+
+            break;
+        }
+        case 'n':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 39);
+
+            break;
+        }
+        case 'o':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 40);
+
+            break;
+        }
+        case 'p':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 41);
+
+            break;
+        }
+        case 'q':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 42);
+
+            break;
+        }
+        case 'r':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 43);
+
+            break;
+        }
+        case 's':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 44);
+
+            break;
+        }
+        case 't':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 45);
+
+            break;
+        }
+        case 'u':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 46);
+
+            break;
+        }
+        case 'v':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 47);
+
+            break;
+        }
+        case 'w':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 48);
+
+            break;
+        }
+        case 'x':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 49);
+
+            break;
+        }
+        case 'y':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 50);
+
+            break;
+        }
+        case 'z':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 51);
+
+            break;
+        }
+        case '0':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 52);
+
+            break;
+        }
+        case '1':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 53);
+
+            break;
+        }
+        case '2':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 54);
+
+            break;
+        }
+        case '3':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 55);
+
+            break;
+        }
+        case '4':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 56);
+
+            break;
+        }
+        case '5':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 57);
+
+            break;
+        }
+        case '6':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 58);
+
+            break;
+        }
+        case '7':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 59);
+
+            break;
+        }
+        case '8':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 60);
+
+            break;
+        }
+        case '9':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 61);
+
+            break;
+        }
+        case '`':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 62);
+
+            break;
+        }
+        case '~':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 63);
+
+            break;
+        }
+        case '!':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 64);
+
+            break;
+        }
+        case '@':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 65);
+
+            break;
+        }
+        case '#':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 66);
+
+            break;
+        }
+        case '$':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 67);
+
+            break;
+        }
+        case '%':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 68);
+
+            break;
+        }
+        case '^':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 69);
+
+            break;
+        }
+        case '&':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 70);
+
+            break;
+        }
+        case '*':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 71);
+
+            break;
+        }
+        case '(':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 72);
+
+            break;
+        }
+        case ')':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 73);
+
+            break;
+        }
+        case '-':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 74);
+
+            break;
+        }
+        case '=':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 75);
+
+            break;
+        }
+        case '_':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 76);
+
+            break;
+        }
+        case '+':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 77);
+
+            break;
+        }
+        case '\\':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 78);
+
+            break;
+        }
+        case '|':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 79);
+
+            break;
+        }
+        case '[':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 80);
+
+            break;
+        }
+        case ']':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 81);
+
+            break;
+        }
+        case '{':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 82);
+
+            break;
+        }
+        case '}':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 83);
+
+            break;
+        }
+        case ';':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 84);
+
+            break;
+        }
+        case '\'':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 85);
+
+            break;
+        }
+        case ':':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 86);
+
+            break;
+        }
+        case '"':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 87);
+
+            break;
+        }
+        case ',':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 88);
+
+            break;
+        }
+        case '<':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 89);
+
+            break;
+        }
+        case '>':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 90);
+
+            break;
+        }
+        case '.':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 91);
+
+            break;
+        }
+        case '/':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 92);
+
+            break;
+        }
+        case '?':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 93);
+
+            break;
+        }
+        case ' ':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 94);
+
+            break;
+        }
+        case '»':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 95);
+
+            break;
+        }
+        case '«':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 96);
+
+            break;
+        }
+        case '\xf2':
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 97);
+
+            break;
+        }
+        default:
+        {
+            StartingFontSheetByte = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - GameBitmap->BitMapInfo.bmiHeader.biWidth + (CharWidth * 93);
+        }
+        }
+
+
+        for (int YPixel = 0; YPixel < CharHeight; YPixel++)
+        {
+            for (int XPixel = 0; XPixel < CharWidth; XPixel++)
+            {
+                FontSheetOffset = StartingFontSheetByte + XPixel - (GameBitmap->BitMapInfo.bmiHeader.biWidth * YPixel);
+
+                StringBitmapOffset = (Character * CharWidth) + ((StringBitmap.BitMapInfo.bmiHeader.biWidth * StringBitmap.BitMapInfo.bmiHeader.biHeight) - \
+                    StringBitmap.BitMapInfo.bmiHeader.biWidth) + XPixel - (StringBitmap.BitMapInfo.bmiHeader.biWidth) * YPixel;
+
+                memcpy_s(&FontSheetPixel, sizeof(PIXEL32), (PIXEL32*)GameBitmap->Memory + FontSheetOffset, sizeof(PIXEL32));
+
+                FontSheetPixel.Red = 0xff;
+
+                FontSheetPixel.Green = 0x00;
+
+                FontSheetPixel.Blue = 0x00;
+
+                memcpy_s((PIXEL32*)StringBitmap.Memory + StringBitmapOffset, sizeof(PIXEL32), &FontSheetPixel, sizeof(PIXEL32));
+            }
+        }
+    }
+
+
+    Blit32BppBitmapToBuffer(&StringBitmap, x, y);
+
+
+    if (StringBitmap.Memory)
+    {
+        HeapFree(GetProcessHeap(), 0, StringBitmap.Memory);
+    }
+}
+
+
 void RenderFrameGraphics(void)
 {
     
@@ -661,6 +1321,7 @@ void RenderFrameGraphics(void)
     }
     #endif
 
+    BlitStringToBuffer("GAME OVER", &g6x7Font, 100, 100);
 
     Blit32BppBitmapToBuffer(&gPlayer.Sprite[gPlayer.CurrentArmor][gPlayer.Direction + gPlayer.SpriteIndex], gPlayer.ScreenPosX, gPlayer.ScreenPosY);
 
