@@ -21,12 +21,24 @@
     <ClCompile Include="Dictionary.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Animation.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Concatenate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Dictionary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Concatenate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

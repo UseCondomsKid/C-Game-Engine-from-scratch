@@ -17,6 +17,8 @@
 
 #include "Dictionary.h"
 
+#include "Animation.h"
+
 #pragma comment(lib, "Winmm.lib")
 
 
@@ -25,12 +27,16 @@ HWND gGameWindow;
 BOOL gGameIsRunning; //Global vars are initialized to zero by default
 GAMEBITMAP gBackBuffer;
 GAMEBITMAP g6x7Font;
+GAMEBITMAP gPlayerSpriteSheet;
+dict_t gPlayerAnimDict;
 dict_t gFontDict;
 GAMEPERFDATA gPerformanceData;
 HERO gPlayer;
 BOOL gWindowHasFocus;
 REGISTRYPARAPMS gRegistryParams;
+uint16_t gDeltaTime;
 
+ANIMATION gAnimation;
 
 int __stdcall WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, PSTR CommandLine, INT CmdShow)
 {
@@ -157,6 +163,8 @@ int __stdcall WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, PSTR Comma
     while (gGameIsRunning == TRUE) 
     {
         QueryPerformanceCounter((LARGE_INTEGER*)&FrameStart);
+        
+
 
         while (PeekMessageA(&Message, gGameWindow, 0, 0, PM_REMOVE))
         {
@@ -169,7 +177,7 @@ int __stdcall WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, PSTR Comma
 
         QueryPerformanceCounter((LARGE_INTEGER*)&FrameEnd);
 
-        ElapsedMicroseconds = FrameEnd - FrameStart;
+        ElapsedMicroseconds = FrameEnd - FrameStart; //This is the delta
         ElapsedMicroseconds *= 1000000;
         ElapsedMicroseconds /= gPerformanceData.PerfFrequency;
 
@@ -178,6 +186,8 @@ int __stdcall WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, PSTR Comma
 
         while (ElapsedMicroseconds < TARGET_MICROSECONDS_PER_FRAME)
         {
+            gDeltaTime = (FrameEnd - FrameStart) / 1000;
+
             ElapsedMicroseconds = FrameEnd - FrameStart;
             ElapsedMicroseconds *= 1000000;
             ElapsedMicroseconds /= gPerformanceData.PerfFrequency;
@@ -406,19 +416,13 @@ void ProcessPlayerInput(void)
         gPerformanceData.DisplayDebugInfo = !gPerformanceData.DisplayDebugInfo;
     }
 
+    #ifdef GRID_MOVEMENT
+    
     if (!gPlayer.MovementRemaining)
     {
-        if (DownKeyIsDown)
+        if (LeftKeyIsDown)
         {
-            if (gPlayer.ScreenPosY < GAME_RES_HEIGHT - 16)
-            {
-                gPlayer.MovementRemaining = 16;
-                gPlayer.Direction = DIRECTION_DOWN;
-            }
-        }
-        else if (LeftKeyIsDown)
-        {
-            if (gPlayer.ScreenPosX > 0)
+            if (gPlayer.Entity.ScreenPosX > 0)
             {
                 gPlayer.MovementRemaining = 16;
                 gPlayer.Direction = DIRECTION_LEFT;
@@ -426,7 +430,7 @@ void ProcessPlayerInput(void)
         }
         else if (RightKeyIsDown)
         {
-            if (gPlayer.ScreenPosX < GAME_RES_WIDTH - 16)
+            if (gPlayer.Entity.ScreenPosX < GAME_RES_WIDTH - 16)
             {
                 gPlayer.MovementRemaining = 16;
                 gPlayer.Direction = DIRECTION_RIGHT;
@@ -434,10 +438,18 @@ void ProcessPlayerInput(void)
         }
         else if (UpKeyIsDown)
         {
-            if (gPlayer.ScreenPosY > 0)
+            if (gPlayer.Entity.ScreenPosY > 0)
             {
                 gPlayer.MovementRemaining = 16;
                 gPlayer.Direction = DIRECTION_UP;
+            }
+        }
+        else if (DownKeyIsDown)
+        {
+            if (gPlayer.Entity.ScreenPosY < GAME_RES_HEIGHT - 16)
+            {
+                gPlayer.MovementRemaining = 16;
+                gPlayer.Direction = DIRECTION_DOWN;
             }
         }
     }
@@ -447,56 +459,54 @@ void ProcessPlayerInput(void)
 
         if (gPlayer.Direction == DIRECTION_DOWN)
         {
-            gPlayer.ScreenPosY++;
+            gPlayer.Entity.ScreenPosY++;
         }
         else if (gPlayer.Direction == DIRECTION_LEFT)
         {
-            gPlayer.ScreenPosX--;
+            gPlayer.Entity.ScreenPosX--;
         }
         else if (gPlayer.Direction == DIRECTION_RIGHT)
         {
-            gPlayer.ScreenPosX++;
+            gPlayer.Entity.ScreenPosX++;
         }
         else if (gPlayer.Direction == DIRECTION_UP)
         {
-            gPlayer.ScreenPosY--;
-        }
-
-        switch (gPlayer.MovementRemaining)
-        {
-            case 16:
-            {
-                gPlayer.SpriteIndex = 0;
-                break;
-            }
-            case 12:
-            {
-                gPlayer.SpriteIndex = 1;
-                break;
-            }
-            case 8:
-            {
-                gPlayer.SpriteIndex = 0;
-                break;
-            }
-            case 4:
-            {
-                gPlayer.SpriteIndex = 2;
-                break;
-            }
-            case 0:
-            {
-                gPlayer.SpriteIndex = 0;
-                break;
-            }
-
-            default:
-            {
-
-            }
+            gPlayer.Entity.ScreenPosY--;
         }
     }
 
+    #else
+
+    if (LeftKeyIsDown)
+    {
+        if (gPlayer.Entity.ScreenPosX > 0)
+        {
+            gPlayer.Entity.ScreenPosX--;
+        }
+    }
+    else if (RightKeyIsDown)
+    {
+        if (gPlayer.Entity.ScreenPosX < GAME_RES_WIDTH - 16)
+        {
+            gPlayer.Entity.ScreenPosX++;
+        }
+    }
+    else if (UpKeyIsDown)
+    {
+        if (gPlayer.Entity.ScreenPosY > 0)
+        {
+            gPlayer.Entity.ScreenPosY--;
+        }
+    }
+    else if (DownKeyIsDown)
+    {
+        if (gPlayer.Entity.ScreenPosY < GAME_RES_HEIGHT - 16)
+        {
+            gPlayer.Entity.ScreenPosY++;
+        }
+    }
+
+    #endif
 
     DebugKeyWasDown = DebugKeyIsDown;
     LeftKeyWasDown = LeftKeyIsDown;
@@ -593,17 +603,26 @@ DWORD InitializeHero(void)
 {
     DWORD Error = ERROR_SUCCESS;
 
-    gPlayer.ScreenPosX = 64;
-    gPlayer.ScreenPosY = 64;
+    gPlayer.Entity.ScreenPosX = 64;
+    gPlayer.Entity.ScreenPosY = 64;
     gPlayer.CurrentArmor = SUIT_0;
     gPlayer.Direction = DIRECTION_DOWN;
 
-    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Down_Standing.bmpx", &gPlayer.Sprite[SUIT_0][FACING_DOWN_0])) != ERROR_SUCCESS)
+    if ((Error = Load32BppBitmapFromFile(".\\Assets\\TestElfIdle.bmpx", &gPlayerSpriteSheet)) != ERROR_SUCCESS)
     {
         MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         goto Exit;
     }
-    if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Down_Walk1.bmpx", &gPlayer.Sprite[SUIT_0][FACING_DOWN_1])) != ERROR_SUCCESS)
+
+    gPlayer.Entity.NumberOfAnimations = 1;
+
+    gAnimation = CreateAnimation("Idle", 16, 16, 0, 4, .1f);
+    //Check out a video by i forgot who, but he speaks about why global variables suck and why you shouldn't use them
+    //Find a solution to gAnimation, I don't want it to be a global variable
+    //MAYBE you can define the animations in an external file and then read from that file --> Check this out
+
+
+    /*if ((Error = Load32BppBitmapFromFile(".\\Assets\\Hero_Suit0_Down_Walk1.bmpx", &gPlayer.Sprite[SUIT_0][FACING_DOWN_1])) != ERROR_SUCCESS)
     {
         MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         goto Exit;
@@ -657,7 +676,7 @@ DWORD InitializeHero(void)
     {
         MessageBoxA(NULL, "Load32BppBitmapFromFile failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         goto Exit;
-    }
+    }*/
 
 
 Exit:
@@ -846,11 +865,13 @@ void RenderFrameGraphics(void)
     }
     #endif
 
-    PIXEL32 FontColor = { 0x00, 0xFF, 0x00, 0xFF };
+    PIXEL32 FontColor = { 0x00, 0xFF, 0xFF, 0xFF };
 
     BlitStringToBuffer("GAME OVER", &g6x7Font, &FontColor, 100, 100);
 
-    Blit32BppBitmapToBuffer(&gPlayer.Sprite[gPlayer.CurrentArmor][gPlayer.Direction + gPlayer.SpriteIndex], gPlayer.ScreenPosX, gPlayer.ScreenPosY);
+    
+    gPlayer.Entity.Sprite = AnimateSprite(gAnimation, gPlayer.Entity, &gPlayerSpriteSheet);
+    Blit32BppBitmapToBuffer(&gPlayer.Entity.Sprite, gPlayer.Entity.ScreenPosX, gPlayer.Entity.ScreenPosY);
 
 
     HDC DeviceContext = GetDC(gGameWindow);
@@ -902,8 +923,11 @@ void RenderFrameGraphics(void)
         sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "Total Frames: %llu", gPerformanceData.TotalFramesRendered);
         TextOutA(DeviceContext, 0, 104, DebugTextBuffer, (int)strlen(DebugTextBuffer));
 
-        sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "ScreenPos: (%d,%d)", gPlayer.ScreenPosX, gPlayer.ScreenPosY);
+        sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "ScreenPos: (%d,%d)", gPlayer.Entity.ScreenPosX, gPlayer.Entity.ScreenPosY);
         TextOutA(DeviceContext, 0, 117, DebugTextBuffer, (int)strlen(DebugTextBuffer));
+
+        sprintf_s(DebugTextBuffer, _countof(DebugTextBuffer), "DeltaTime: %lu", gDeltaTime);
+        TextOutA(DeviceContext, 0, 130, DebugTextBuffer, (int)strlen(DebugTextBuffer));
     }
 
     ReleaseDC(gGameWindow, DeviceContext);
@@ -914,7 +938,7 @@ void Blit32BppBitmapToBuffer(_In_ GAMEBITMAP* GameBitmap, _In_ uint16_t x, _In_ 
     int32_t StartingScreenPixel = ((GAME_RES_WIDTH * GAME_RES_HEIGHT) - GAME_RES_WIDTH) - (GAME_RES_WIDTH * y) + x;
     int32_t StartingBitmapPixel = (GameBitmap->BitMapInfo.bmiHeader.biWidth * GameBitmap->BitMapInfo.bmiHeader.biHeight) - \
         GameBitmap->BitMapInfo.bmiHeader.biWidth;
-    int32_t MemoryOffset = 0;
+    int32_t MemoryOffset = 0;   
     int32_t BitmapOffset = 0;
     PIXEL32 BitmapPixel = { 0 };
     //PIXEL32 BackgroundPixel = { 0 };

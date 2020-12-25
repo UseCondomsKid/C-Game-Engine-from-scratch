@@ -183,10 +183,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.c" />
+    <ClCompile Include="Concatenate.c" />
     <ClCompile Include="Dictionary.c" />
     <ClCompile Include="Main.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="Concatenate.h" />
     <ClInclude Include="Dictionary.h" />
     <ClInclude Include="Main.h" />
   </ItemGroup>

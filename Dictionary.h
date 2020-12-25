@@ -6,7 +6,7 @@
 
 
 typedef struct dict_entry_s {
-    char* key;
+    const char* key;
     int value;
 } dict_entry_s;
 
@@ -17,12 +17,12 @@ typedef struct dict_s {
 } dict_s, * dict_t;
 
 
-int DictFindIndex(dict_t dict, char* key);
+int DictFindIndex(_In_ dict_t dict, _In_ const char* key);
     
-int DictFind(dict_t dict, char* key);
+int DictFind(_In_ dict_t dict, _In_ const char* key);
 
-void DictAdd(dict_t dict, char* key, int value);
+void DictAdd(_In_ dict_t dict, _In_ const char* key, _In_ int value);
 
 dict_t DictNew(void);
 
-void DictFree(dict_t dict);
+void DictFree(_In_ dict_t dict);

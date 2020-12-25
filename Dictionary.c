@@ -1,7 +1,7 @@
 #include "Dictionary.h"
 
 
-int DictFindIndex(dict_t dict, char* key) 
+int DictFindIndex(_In_ dict_t dict, _In_ const char* key)
 {
     for (int i = 0; i < dict->len; i++) {
         if (key == dict->entry[i].key) {
@@ -11,13 +11,13 @@ int DictFindIndex(dict_t dict, char* key)
     return -1;
 }
 
-int DictFind(dict_t dict, char* key) 
+int DictFind(_In_ dict_t dict, _In_ const char* key)
 {
     int idx = DictFindIndex(dict, key);
     return dict->entry[idx].value;
 }
 
-void DictAdd(dict_t dict, char* key, int value) 
+void DictAdd(_In_ dict_t dict, _In_ const char* key, _In_ int value)
 {
     int idx = DictFindIndex(dict, key);
     if (idx != -1) {
@@ -41,7 +41,7 @@ dict_t DictNew(void)
     return d;
 }
 
-void DictFree(dict_t dict) //Frees the memory from the created dictionary
+void DictFree(_In_ dict_t dict) //Frees the memory from the created dictionary
 {
     for (int i = 0; i < dict->len; i++) {
         free(dict->entry[i].key);

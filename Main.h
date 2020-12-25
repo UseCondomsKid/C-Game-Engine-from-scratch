@@ -1,5 +1,6 @@
 #pragma once
 
+
 #define GAME_NAME "GAME_A"
 
 #define GAME_RES_WIDTH  384
@@ -9,6 +10,7 @@
 #define CALCULATE_AVG_FPS_EVERY_X_FRAMES	120
 #define TARGET_MICROSECONDS_PER_FRAME 16667ULL
 #define SIMD
+//#define GRID_MOVEMENT
 
 #define SUIT_0 0
 #define SUIT_1 1
@@ -94,21 +96,30 @@ typedef struct GAMEPERFDATA
 
 } GAMEPERFDATA;
 
-typedef struct HERO
+typedef struct ENTITY
 {
 	char Name[12];
-	GAMEBITMAP Sprite[3][12];
+	GAMEBITMAP Sprite;
 	int16_t ScreenPosX;
 	int16_t ScreenPosY;
+	int NumberOfAnimations;
+
+} ENTITY;
+
+
+typedef struct HERO
+{
+	ENTITY Entity;
 	uint8_t MovementRemaining;
 	uint8_t Direction;
 	uint8_t CurrentArmor;
-	uint8_t SpriteIndex;
 	int32_t HP;
 	int32_t Strength;
 	int32_t MP;
 
-} HERO;
+}HERO;
+
+
 
 typedef struct REGISTRYPARAPMS
 {
