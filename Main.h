@@ -1,5 +1,12 @@
 #pragma once
 
+#include <xaudio2.h> //This should not be here find a way to fix this
+
+#ifdef _DEBUG
+	#define ASSERT(Expression, Message) if (!(Expression)) { *(int*)0 = 0; }
+#else
+	#define ASSERT(Expression, Message) ((void)0);
+#endif
 
 #define GAME_NAME "GAME_A"
 
@@ -9,6 +16,7 @@
 #define GAME_DRAWING_AREA_MEMORY_SIZE (GAME_RES_WIDTH * GAME_RES_HEIGHT * (GAME_BPP / 8))
 #define CALCULATE_AVG_FPS_EVERY_X_FRAMES	120
 #define TARGET_MICROSECONDS_PER_FRAME 16667ULL
+#define NUMBER_OF_SFX_SOURCE_VOICES 4
 #define SIMD
 //#define GRID_MOVEMENT
 
@@ -39,11 +47,16 @@
 
 #define FONT_SHEET_CHARACTERS_PER_ROW 98
 
-#define LOG_LEVEL_NONE 0
-#define LOG_LEVEL_INFO 1
-#define LOG_LEVEL_WARN 2
-#define LOG_LEVEL_ERROR 3
-#define LOG_LEVEL_DEBUG 4
+typedef enum LOGLEVEL
+{
+	LL_NONE = 0,
+	LL_ERROR = 1,
+	LL_WARNING = 2,
+	LL_INFO = 3,
+	LL_DEBUG = 4
+
+}LOGLEVEL;
+
 #define LOG_FILE_NAME GAME_NAME".log"
 
 
@@ -63,6 +76,13 @@ typedef struct GAMEBITMAP
 	void* Memory;			//8 bytes
 
 } GAMEBITMAP;
+
+typedef struct GAMESOUND
+{
+	WAVEFORMATEX WaveFormat;
+	XAUDIO2_BUFFER Buffer;
+
+} GAMESOUND;
 
 typedef struct PIXEL32
 {
@@ -96,7 +116,7 @@ typedef struct GAMEPERFDATA
 
 } GAMEPERFDATA;
 
-typedef struct ENTITY
+typedef struct _ENTITY
 {
 	char Name[12];
 	GAMEBITMAP Sprite;
@@ -104,12 +124,12 @@ typedef struct ENTITY
 	int16_t ScreenPosY;
 	int NumberOfAnimations;
 
-} ENTITY;
+} _ENTITY;
 
 
 typedef struct HERO
 {
-	ENTITY Entity;
+	_ENTITY Entity;
 	uint8_t MovementRemaining;
 	uint8_t Direction;
 	uint8_t CurrentArmor;
@@ -120,12 +140,31 @@ typedef struct HERO
 }HERO;
 
 
-
 typedef struct REGISTRYPARAPMS
 {
 	DWORD LogLevel;
 
 } REGISTRYPARAPMS;
+
+
+typedef struct GAMEINPUT
+{
+	int16_t EscapeKeyIsDown;
+	int16_t DebugKeyIsDown;
+	int16_t LeftKeyIsDown;
+	int16_t RightKeyIsDown;
+	int16_t UpKeyIsDown;
+	int16_t DownKeyIsDown;
+	int16_t ChooseKeyIsDown;
+
+	int16_t DebugKeyWasDown;
+	int16_t LeftKeyWasDown;
+	int16_t RightKeyWasDown;
+	int16_t UpKeyWasDown;
+	int16_t DownKeyWasDown;
+	int16_t ChooseKeyWasDown;
+
+} GAMEINPUT;
 
 
 LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ WPARAM WParam, _In_ LPARAM LParam);
@@ -142,12 +181,48 @@ DWORD InitializeHero(void);
 
 void Blit32BppBitmapToBuffer(_In_ GAMEBITMAP* GameBitmap, _In_ uint16_t x, _In_ uint16_t y);
 
-void InitializeFont(_In_ GAMEBITMAP* FontSheet);
-
 void BlitStringToBuffer(_In_ char* String, _In_ GAMEBITMAP* FontSheet, _In_ PIXEL32* Color, _In_ uint16_t x, _In_ uint16_t y); 
 
 void RenderFrameGraphics(void);
 
+void ClearScreen(_In_ __m128i* Color);
+
 DWORD LoadRegistryParameters(void);
 
-void LogMessageA(_In_ DWORD LogLevel, _In_ char* Message, _In_ ...);
+void LogMessageA(_In_ LOGLEVEL LogLevel, _In_ char* Message, _In_ ...);
+
+void DrawDebugInfo(void);
+
+void FindFirstConnectedGamepad(void);
+
+HRESULT InitializeSoundEngine(void);
+
+DWORD LoadWavFromFile(_In_ char* FileName, _Inout_ GAMESOUND* GameSound);
+
+void PlayGameSound(_In_ GAMESOUND* GameSound);
+
+
+//Menu Items Functions
+void MenuItem_TitleScreen_Resume(void);
+
+void MenuItem_TitleScreen_StartNew(void);
+
+void MenuItem_TitleScreen_Options(void);
+
+void MenuItem_TitleScreen_Exit(void);
+
+
+//Draw Functions
+void DRAW_Overworld(void);
+
+void DRAW_TitleScreen(void);
+
+void DRAW_ExitYesNoScreen(void);
+
+
+//Process Player Inputs Functions
+void PPI_Overworld(void);
+
+void PPI_TitleScreen(void);
+
+void PPI_ExitYesNoScreen(void);

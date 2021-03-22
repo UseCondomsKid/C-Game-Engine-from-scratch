@@ -16,5 +16,5 @@ typedef struct ANIMATION
 
 ANIMATION CreateAnimation(_In_ char* AnimationName, _In_ uint16_t Width, _In_ uint16_t Height, _In_ uint16_t Index, _In_ uint16_t Frames, _In_ float Speed);
 
-GAMEBITMAP AnimateSprite(ANIMATION Animation, ENTITY Entity, GAMEBITMAP* SpriteSheet);
+void AnimateSprite(ANIMATION Animation, _ENTITY Entity, GAMEBITMAP* SpriteSheet);
 

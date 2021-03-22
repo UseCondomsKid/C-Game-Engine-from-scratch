@@ -14,11 +14,7 @@
 
 #include "Main.h"
 
-#include "Dictionary.h"
-
 #include "Animation.h"
-
-#include "Concatenate.h"
 
 #pragma comment(lib, "Winmm.lib")
 
@@ -39,7 +35,8 @@ ANIMATION CreateAnimation(_In_ char* AnimationName, _In_ uint16_t Width, _In_ ui
 }
 
 
-GAMEBITMAP AnimateSprite(ANIMATION Animation, ENTITY Entity, GAMEBITMAP* SpriteSheet)
+
+void AnimateSprite(ANIMATION Animation, _ENTITY Entity, GAMEBITMAP* SpriteSheet)
 {
     
     uint16_t Index = Animation.Index;
@@ -69,22 +66,19 @@ GAMEBITMAP AnimateSprite(ANIMATION Animation, ENTITY Entity, GAMEBITMAP* SpriteS
 
     uint16_t StartingSpriteWidth = SpriteWidth * ((int)AnimationTime % Frames);
 
-    uint16_t StartingSpriteSheetByte = (SpriteSheet->BitMapInfo.bmiHeader.biWidth * SpriteSheet->BitMapInfo.bmiHeader.biHeight) - (SpriteSheet->BitMapInfo.bmiHeader.biWidth + StartingSpriteWidth);
+    uint16_t StartingSpriteSheetPixel = (SpriteSheet->BitMapInfo.bmiHeader.biWidth * (SpriteSheet->BitMapInfo.bmiHeader.biHeight - (SpriteHeight - Height))) - (SpriteSheet->BitMapInfo.bmiHeader.biWidth + StartingSpriteWidth);
 
 
     int SpriteSheetOffset = 0;
     int SpriteBitmapOffset = 0;
     PIXEL32 SpritePixel = { 0 };
 
-    //Fix This
-
-
 
      for (int YPixel = 0; YPixel < SpriteHeight; YPixel++)
      {
         for (int XPixel = 0; XPixel < SpriteWidth; XPixel++)
         {
-            SpriteSheetOffset = StartingSpriteSheetByte + XPixel - (SpriteSheet->BitMapInfo.bmiHeader.biWidth * YPixel);
+            SpriteSheetOffset = StartingSpriteSheetPixel + XPixel - (SpriteSheet->BitMapInfo.bmiHeader.biWidth * YPixel);
 
             SpriteBitmapOffset = ((Sprite.BitMapInfo.bmiHeader.biWidth * Sprite.BitMapInfo.bmiHeader.biHeight) - \
                 Sprite.BitMapInfo.bmiHeader.biWidth) + XPixel - ((Sprite.BitMapInfo.bmiHeader.biWidth) * YPixel);
@@ -95,10 +89,10 @@ GAMEBITMAP AnimateSprite(ANIMATION Animation, ENTITY Entity, GAMEBITMAP* SpriteS
         }
      }
 
-    return Sprite;
+     Blit32BppBitmapToBuffer(&Sprite, Entity.ScreenPosX, Entity.ScreenPosY);
 
-    if (Sprite.Memory)
-    {
-        HeapFree(GetProcessHeap(), 0, Sprite.Memory);
-    }
+     if (Sprite.Memory)
+     {
+         HeapFree(GetProcessHeap(), 0, Sprite.Memory);
+     }
 }
